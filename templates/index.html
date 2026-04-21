@@ -91,11 +91,7 @@
             </button>
             <div id="media-controls" class="hidden p-6 space-y-4">
                 <div id="camera-container" class="relative rounded-2xl overflow-hidden bg-black aspect-video shadow-inner">
-                    <div id="camera-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 text-slate-500">
-                        <span class="text-4xl mb-2">📸</span>
-                        <span class="text-[10px] font-black uppercase tracking-widest">AI Camera Engine Ready</span>
-                    </div>
-                    <video id="camera-stream" autoplay playsinline muted class="hidden w-full h-full object-cover opacity-80" style="transform: scaleX(-1);"></video>
+                    <video id="camera-stream" autoplay playsinline muted class="w-full h-full object-cover opacity-80" style="transform: scaleX(-1);"></video>
                     <div id="recording-indicator" class="hidden absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-red-600 rounded-full animate-pulse">
                         <div class="w-2 h-2 bg-white rounded-full"></div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-white">REC</span>
@@ -280,15 +276,11 @@
             mediaControls.classList.toggle('hidden');
             chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
             if (isHidden && !mediaStream) {
-                // DEMO MODE: Show placeholder instead of actual camera to protect privacy
-                document.getElementById('camera-placeholder').classList.remove('hidden');
-                console.log("DEMO MODE: Camera placeholder active");
-                /* 
                 try {
                     mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = mediaStream;
+                    video.classList.remove('hidden');
                 } catch (e) { statusMsg.textContent = "CAMERA ACCESS DENIED"; }
-                */
             }
         });
 
