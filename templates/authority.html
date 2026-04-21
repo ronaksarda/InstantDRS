@@ -271,6 +271,7 @@
         }
 
         function timeAgo(ts) {
+            if (!ts) return 'Unknown time';
             const diff = Math.floor(Date.now() / 1000 - ts);
             if (diff < 60) return `${diff}s ago`;
             if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
@@ -293,11 +294,13 @@
         }
 
         function acknowledgeIncident(id) {
+            console.log("Acknowledging incident locally:", id);
             if (!acknowledged.includes(id)) {
                 acknowledged.push(id);
                 localStorage.setItem('ack_ids', JSON.stringify(acknowledged));
             }
-            renderFiltered();
+            if (currentTab === 'active') renderFiltered();
+            else renderHandled();
         }
 
         async function resolveIncident(id) {
@@ -381,10 +384,13 @@
                 ${inc.ai_reasoning ? `<div class="text-[10px] font-medium italic text-slate-500 mt-2 p-2 bg-slate-800/50 rounded-lg">"${inc.ai_reasoning}"</div>` : ''}
             ` : '';
 
+            const displayTime = isHandled ? (inc.resolved_at || inc.time) : inc.time;
+            const timeLabel = isHandled ? 'Resolved' : 'Reported';
+
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-3">
                     ${sevBadge}
-                    <span class="text-slate-500 font-bold text-[10px] uppercase">${timeAgo(inc.time)}</span>
+                    <span class="text-slate-500 font-bold text-[10px] uppercase">${timeLabel} ${timeAgo(displayTime)}</span>
                 </div>
                 <h2 class="text-lg font-black mb-0.5 uppercase tracking-tighter">${inc.type || 'Emergency'}</h2>
                 <p class="${isGold ? 'text-amber-400' : isHandled ? 'text-green-400' : 'text-pink-400'} text-[10px] font-bold uppercase tracking-widest mb-2">${inc.summary || ''}</p>

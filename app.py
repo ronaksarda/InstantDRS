@@ -322,6 +322,9 @@ def resolve_incident():
         # Keep only last 50 resolved cases
         queue['resolved'] = resolved[-50:]
         queue['last_update'] = int(time.time())
+        # Update active count in stats
+        if 'stats' in queue:
+            queue['stats']['active_count'] = len(queue['incidents'])
         save_queue(queue)
         return jsonify({"status": "resolved"}), 200
     
