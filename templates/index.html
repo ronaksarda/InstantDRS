@@ -272,15 +272,22 @@
 
         // MEDIA
         mediaToggle.addEventListener('click', async () => {
-            const isHidden = mediaControls.classList.contains('hidden');
-            mediaControls.classList.toggle('hidden');
-            chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-            if (isHidden && !mediaStream) {
+            const isVisible = mediaControls.classList.toggle('hidden');
+            chevron.style.transform = mediaControls.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+            
+            if (!mediaControls.classList.contains('hidden') && !mediaStream) {
                 try {
-                    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    console.log("Attempting camera access...");
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: "environment" }, 
+                        audio: false 
+                    });
                     video.srcObject = mediaStream;
-                    video.classList.remove('hidden');
-                } catch (e) { statusMsg.textContent = "CAMERA ACCESS DENIED"; }
+                    video.onloadedmetadata = () => video.play();
+                } catch (e) { 
+                    console.error("Camera error:", e);
+                    alert("Camera Access Denied: Please check your browser permissions.");
+                }
             }
         });
 
