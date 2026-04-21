@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.db
+.DS_Store
+static/uploads/*
+!static/uploads/.gitkeep
+live_queue.json
+.env
+*.exe
+priority_engine
