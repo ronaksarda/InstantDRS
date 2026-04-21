@@ -167,10 +167,7 @@
         let acknowledged = JSON.parse(localStorage.getItem('ack_ids') || '[]');
         let currentTab = 'active';
 
-        // Bind functions to window immediately for HTML onclick handlers
-        window.switchTab = (tab) => switchTab(tab);
-        window.acknowledgeIncident = (id) => acknowledgeIncident(id);
-        window.resolveIncident = (id) => resolveIncident(id);
+
         let severityChart = null;
         let typeChart = null;
 
@@ -313,7 +310,8 @@
                 });
                 if (res.ok) {
                     console.log("Incident resolved on server:", id);
-                    acknowledgeIncident(id);
+                    // Force an immediate fetch of the new state so the UI updates instantly
+                    await pollFallback();
                 } else {
                     console.error("Failed to resolve incident:", await res.text());
                     alert("Failed to resolve incident. Check console or login status.");
