@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstantDRS | SOS Transmitted</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 transition-colors duration-500">
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+    </script>
+    <div class="relative w-full max-w-md">
+        <!-- Background Glow -->
+        <div class="absolute -inset-10 bg-pink-500/10 blur-[100px] -z-10"></div>
+        
+        <div class="glass rounded-[3rem] p-8 md:p-12 text-center space-y-8 relative overflow-hidden">
+            <div class="scan-line-v"></div>
+            
+            <div class="relative">
+                <div class="w-24 h-24 mx-auto bg-green-500/20 rounded-full flex items-center justify-center text-5xl relative">
+                    <span class="animate-pulse">✅</span>
+                    <div class="absolute inset-0 border-4 border-green-500 rounded-full animate-ping opacity-20"></div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h1 class="text-4xl font-black uppercase tracking-tighter text-slate-800">SOS Dispatched</h1>
+                <p class="text-slate-500 text-sm font-medium">Report <span id="incident-id" class="font-bold text-pink-600">...</span> transmitted via Satellite Link</p>
+            </div>
+
+            <div id="ai-results" class="hidden text-left space-y-4 p-6 bg-slate-900 rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                </div>
+                
+                <div class="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em]">AI Triage Protocol v1.5</div>
+                
+                <div id="ai-summary" class="text-lg font-bold text-white leading-tight"></div>
+                
+                <div class="grid grid-cols-1 gap-3 pt-2">
+                    <div id="ai-units-container" class="hidden flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-xl">🚒</span>
+                        <div>
+                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Recommended Units</div>
+                            <div id="ai-units" class="text-xs text-cyan-400 font-bold"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="ai-risks-container" class="hidden flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-xl">⚠️</span>
+                        <div>
+                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Secondary Hazards</div>
+                            <div id="ai-risks" class="text-xs text-orange-400 font-bold"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-white/5 flex justify-between items-center">
+                    <div id="ai-engine" class="text-[8px] text-slate-500 font-black uppercase tracking-widest"></div>
+                    <div class="text-[8px] text-green-500 font-black uppercase tracking-widest">Verified ✓</div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="triage-bar h-1.5">
+                    <div class="triage-progress rounded-full"></div>
+                </div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Real-time Coordination Active</p>
+            </div>
+
+            <div class="flex flex-col gap-3 pt-4">
+                <a href="/" class="w-full py-4 bg-pink-600 hover:bg-pink-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-pink-600/20 active:scale-95">
+                    Submit New Report
+                </a>
+                <button onclick="window.print()" class="w-full py-3 glass hover:bg-white/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 transition-all">
+                    📄 Download Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        try {
+            const result = JSON.parse(sessionStorage.getItem('triage_result'));
+            if (result) {
+                document.getElementById('incident-id').textContent = result.id || 'SOS-000';
+                
+                if (result.ai_analysis) {
+                    const box = document.getElementById('ai-results');
+                    box.classList.remove('hidden');
+                    const ai = result.ai_analysis;
+                    
+                    document.getElementById('ai-summary').textContent = ai.summary || 'Emergency Processed';
+                    
+                    if (ai.recommended_units) {
+                        document.getElementById('ai-units-container').classList.remove('hidden');
+                        document.getElementById('ai-units').textContent = ai.recommended_units;
+                    }
+                    
+                    if (ai.secondary_risks && ai.secondary_risks !== 'None' && ai.secondary_risks !== 'None detected') {
+                        document.getElementById('ai-risks-container').classList.remove('hidden');
+                        document.getElementById('ai-risks').textContent = ai.secondary_risks;
+                    }
+                    
+                    document.getElementById('ai-engine').textContent = result.cpp_engine ? 
+                        `Priority Engine: ${result.cpp_time_ms}ms` : 'Manual Triage Fallback';
+                }
+                // We keep it for the receipt if they print, but clear on leave
+                window.onbeforeunload = () => sessionStorage.removeItem('triage_result');
+            }
+        } catch(e) { console.error(e); }
+    </script>
+</body>
+</html>

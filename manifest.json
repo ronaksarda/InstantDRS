@@ -1,0 +1,16 @@
+{
+    "name": "InstantDRS Pro",
+    "short_name": "InstantDRS",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#FDF2F8",
+    "theme_color": "#DB2777",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+}
+

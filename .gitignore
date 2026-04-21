@@ -1,0 +1,24 @@
+# Environment & Secrets
+.env
+FIREBASE_CREDENTIALS_PATH
+
+# Python Junk
+__pycache__/
+*.pyc
+.venv/
+
+# Binaries & Data
+*.exe
+priority_engine
+live_queue.json
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Misc
+node_modules/
