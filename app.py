@@ -112,7 +112,7 @@ def analyze_emergency(text, img_b64, emergency_type):
             ))
             
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-1.5-flash-latest',
             contents=contents
         )
         
@@ -184,35 +184,41 @@ def triage():
     image_url = ''
     if data.get('image_b64'):
         try:
-            img_data = base64.b64decode(data['image_b64'])
+            b64_str = data['image_b64']
+            b64_str += '=' * (-len(b64_str) % 4)
+            img_data = base64.b64decode(b64_str)
             img_filename = f"{incident_id}.jpg"
             with open(os.path.join(UPLOAD_DIR, img_filename), 'wb') as f:
                 f.write(img_data)
             image_url = f"/static/uploads/{img_filename}"
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"IMG DECODE ERROR: {e}")
 
     audio_url = ''
     if data.get('audio_b64'):
         try:
-            audio_data = base64.b64decode(data['audio_b64'])
+            b64_str = data['audio_b64']
+            b64_str += '=' * (-len(b64_str) % 4)
+            audio_data = base64.b64decode(b64_str)
             audio_filename = f"{incident_id}.webm"
             with open(os.path.join(UPLOAD_DIR, audio_filename), 'wb') as f:
                 f.write(audio_data)
             audio_url = f"/static/uploads/{audio_filename}"
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"AUDIO DECODE ERROR: {e}")
 
     video_url = ''
     if data.get('video_b64'):
         try:
-            video_data = base64.b64decode(data['video_b64'])
-            video_filename = f"{incident_id}.mp4"
+            b64_str = data['video_b64']
+            b64_str += '=' * (-len(b64_str) % 4)
+            video_data = base64.b64decode(b64_str)
+            video_filename = f"{incident_id}.webm" # Browser MediaRecorder uses WebM
             with open(os.path.join(UPLOAD_DIR, video_filename), 'wb') as f:
                 f.write(video_data)
             video_url = f"/static/uploads/{video_filename}"
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"VIDEO DECODE ERROR: {e}")
 
     report = {
         "id": incident_id,
