@@ -166,6 +166,11 @@
         let resolvedIncidents = [];
         let acknowledged = JSON.parse(localStorage.getItem('ack_ids') || '[]');
         let currentTab = 'active';
+
+        // Bind functions to window immediately for HTML onclick handlers
+        window.switchTab = (tab) => switchTab(tab);
+        window.acknowledgeIncident = (id) => acknowledgeIncident(id);
+        window.resolveIncident = (id) => resolveIncident(id);
         let severityChart = null;
         let typeChart = null;
 
@@ -296,14 +301,23 @@
         }
 
         async function resolveIncident(id) {
+            console.log("Resolving incident:", id);
             try {
-                await fetch('/api/resolve', {
+                const res = await fetch('/api/resolve', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
-                acknowledgeIncident(id);
-            } catch (e) { }
+                if (res.ok) {
+                    console.log("Incident resolved on server:", id);
+                    acknowledgeIncident(id);
+                } else {
+                    console.error("Failed to resolve incident:", await res.text());
+                    alert("Failed to resolve incident. Check console or login status.");
+                }
+            } catch (e) { 
+                console.error("Resolve error:", e);
+            }
         }
 
         function updateStats(data) {
@@ -441,9 +455,8 @@
                 renderHandled();
             }
         }
-        window.switchTab = switchTab;
-        window.acknowledgeIncident = acknowledgeIncident;
-        window.resolveIncident = resolveIncident;
+        // Functions already bound to window at top of script
+
 
         searchBar.addEventListener('input', renderFiltered);
         filterSeverity.addEventListener('change', renderFiltered);
