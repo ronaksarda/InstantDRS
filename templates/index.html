@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,21 +9,26 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
+
 <body class="min-h-screen">
 
     <header class="p-5 flex justify-between items-center border-b border-pink-200">
         <div class="flex items-center gap-2">
             <div class="w-3 h-3 bg-pink-600 rounded-full animate-pulse"></div>
-            <h1 class="font-black tracking-tighter text-2xl uppercase">Instant<span class="text-pink-600">DRS</span></h1>
+            <h1 class="font-black tracking-tighter text-2xl uppercase">Instant<span class="text-pink-600">DRS</span>
+            </h1>
         </div>
         <div class="flex items-center gap-2">
-            <a href="/authority" class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-pink-600 hover:text-white transition-all">
+            <a href="/authority"
+                class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-pink-600 hover:text-white transition-all">
                 🔐 Command Center
             </a>
-            <button id="dark-mode-toggle" class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-pink-600 hover:text-white transition-all">
+            <button id="dark-mode-toggle"
+                class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-pink-600 hover:text-white transition-all">
                 🌙 DARK
             </button>
-            <div id="battery-status" class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase">
+            <div id="battery-status"
+                class="px-4 py-1 glass rounded-full text-[10px] font-bold tracking-widest uppercase">
                 SYNCING...
             </div>
         </div>
@@ -32,25 +38,39 @@
 
         <div class="text-center pt-4 pb-2">
             <button id="activate-sos" class="sos-button">SOS</button>
-            <p class="text-[9px] mt-3 text-slate-400 font-bold uppercase tracking-widest">Fill details below, then tap SOS</p>
+            <p class="text-[9px] mt-3 text-slate-400 font-bold uppercase tracking-widest">Fill details below, then tap
+                SOS</p>
         </div>
 
         <section class="glass rounded-3xl p-6 space-y-5">
             <h2 class="text-xs font-black text-pink-600 uppercase tracking-widest">Emergency Type</h2>
             <div id="type-grid" class="grid grid-cols-3 gap-3">
-                <button data-type="Fire" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🔥 Fire</button>
-                <button data-type="Medical" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🏥 Medical</button>
-                <button data-type="Violence" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">⚠️ Violence</button>
-                <button data-type="Flood" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🌊 Flood</button>
-                <button data-type="Accident" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">💥 Accident</button>
-                <button data-type="Other" class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">📋 Other</button>
+                <button data-type="Fire"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🔥
+                    Fire</button>
+                <button data-type="Medical"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🏥
+                    Medical</button>
+                <button data-type="Violence"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">⚠️
+                    Violence</button>
+                <button data-type="Flood"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">🌊
+                    Flood</button>
+                <button data-type="Accident"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">💥
+                    Accident</button>
+                <button data-type="Other"
+                    class="type-btn py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">📋
+                    Other</button>
             </div>
         </section>
 
         <section class="glass rounded-3xl p-6 space-y-4">
             <h2 class="text-xs font-black text-pink-600 uppercase tracking-widest">Severity Level</h2>
             <div class="flex items-center gap-4">
-                <input id="severity-slider" type="range" min="1" max="10" value="5" class="flex-1 accent-pink-600 h-2 rounded-full" />
+                <input id="severity-slider" type="range" min="1" max="10" value="5"
+                    class="flex-1 accent-pink-600 h-2 rounded-full" />
                 <span id="severity-value" class="text-2xl font-black text-pink-600 w-10 text-center">5</span>
             </div>
             <div class="flex justify-between text-[9px] text-slate-400 font-bold uppercase tracking-widest px-1">
@@ -62,20 +82,20 @@
 
         <section class="glass rounded-3xl p-6 space-y-4">
             <h2 class="text-xs font-black text-pink-600 uppercase tracking-widest">What is happening?</h2>
-            <textarea
-                id="emergency-text"
+            <textarea id="emergency-text"
                 placeholder="What's the situation? (e.g. '3 cars collided, one is leaking fuel, smoke visible')"
-                class="w-full h-28 p-4 bg-white/30 rounded-2xl outline-none focus:ring-2 focus:ring-pink-600 transition-all text-sm placeholder:text-slate-400 resize-none"
-            ></textarea>
+                class="w-full h-28 p-4 bg-white/30 rounded-2xl outline-none focus:ring-2 focus:ring-pink-600 transition-all text-sm placeholder:text-slate-400 resize-none"></textarea>
         </section>
 
         <section class="glass rounded-3xl p-6 space-y-4">
             <h2 class="text-xs font-black text-pink-600 uppercase tracking-widest">📍 Location</h2>
             <div class="flex gap-3">
-                <button id="gps-btn" class="flex-1 py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">
+                <button id="gps-btn"
+                    class="flex-1 py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">
                     📍 Use GPS
                 </button>
-                <button id="manual-loc-btn" class="flex-1 py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">
+                <button id="manual-loc-btn"
+                    class="flex-1 py-3 glass rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-pink-600 hover:text-white transition-all">
                     ✏️ Type Location
                 </button>
             </div>
@@ -85,77 +105,115 @@
         </section>
 
         <section class="glass rounded-3xl overflow-hidden">
-            <button id="media-toggle" class="w-full py-4 px-6 flex justify-between items-center hover:bg-white/10 transition-colors">
-                <span class="text-xs font-black uppercase tracking-widest text-slate-500">📸 Evidence Vault (Photo / Video / Voice)</span>
+            <button id="media-toggle"
+                class="w-full py-4 px-6 flex justify-between items-center hover:bg-white/10 transition-colors">
+                <span class="text-xs font-black uppercase tracking-widest text-slate-500">📸 Evidence Vault (Photo /
+                    Video / Voice)</span>
                 <span id="chevron" class="text-xs transition-transform duration-300">▼</span>
             </button>
             <div id="media-controls" class="hidden p-6 space-y-4">
-                <div id="camera-container" class="relative rounded-2xl overflow-hidden bg-black aspect-video shadow-inner">
-                    <video id="camera-stream" autoplay playsinline muted class="w-full h-full object-cover opacity-80" style="transform: scaleX(-1);"></video>
-                    <div id="recording-indicator" class="hidden absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-red-600 rounded-full animate-pulse">
+                <div id="camera-container"
+                    class="relative rounded-2xl overflow-hidden bg-black aspect-video shadow-inner">
+                    <video id="camera-stream" autoplay playsinline muted class="w-full h-full object-cover opacity-80"
+                        style="transform: scaleX(-1);"></video>
+                    <div id="recording-indicator"
+                        class="hidden absolute top-4 right-4 flex items-center gap-2 px-3 py-1 bg-red-600 rounded-full animate-pulse">
                         <div class="w-2 h-2 bg-white rounded-full"></div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-white">REC</span>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="proof-btn" class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
+                    <button id="proof-btn"
+                        class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
                         📸 Photo
                     </button>
-                    <button id="video-rec-btn" class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
+                    <button id="video-rec-btn"
+                        class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
                         📹 Video
                     </button>
-                    <button id="voice-rec-btn" class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
+                    <button id="voice-rec-btn"
+                        class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all">
                         🎤 Voice
                     </button>
-                    <label class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all text-center cursor-pointer">
+                    <label
+                        class="py-3 glass hover:bg-pink-600 hover:text-white rounded-2xl font-black text-xs uppercase tracking-wider transition-all text-center cursor-pointer">
                         📁 Upload
                         <input type="file" id="file-upload" accept="image/*,video/*,audio/*" class="hidden" />
                     </label>
                 </div>
 
                 <div id="evidence-preview" class="hidden space-y-3">
-                    <div id="image-preview" class="hidden"><img id="preview-img" class="w-full rounded-2xl border border-white/10" /></div>
-                    <div id="video-preview" class="hidden"><video id="preview-video" controls class="w-full rounded-2xl border border-white/10"></video></div>
-                    <div id="audio-preview" class="hidden"><audio id="preview-audio" controls class="w-full rounded-full border border-white/10"></audio></div>
+                    <div id="image-preview" class="hidden"><img id="preview-img"
+                            class="w-full rounded-2xl border border-white/10" /></div>
+                    <div id="video-preview" class="hidden"><video id="preview-video" controls
+                            class="w-full rounded-2xl border border-white/10"></video></div>
+                    <div id="audio-preview" class="hidden"><audio id="preview-audio" controls
+                            class="w-full rounded-full border border-white/10"></audio></div>
                 </div>
             </div>
         </section>
 
         <div class="flex gap-3">
-            <button id="reset-form" class="flex-1 py-4 glass rounded-3xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-800 transition-all">
+            <button id="reset-form"
+                class="flex-1 py-4 glass rounded-3xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-800 transition-all">
                 🔄 Reset Form
             </button>
         </div>
 
-        <div id="status-message" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center min-h-[1rem]"></div>
+        <div id="status-message"
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center min-h-[1rem]"></div>
 
         <section class="glass rounded-3xl p-6 space-y-3">
             <h2 class="text-xs font-black text-pink-600 uppercase tracking-widest mb-2">🇮🇳 Emergency Helplines</h2>
             <div class="grid grid-cols-2 gap-2">
-                <a href="tel:112" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:112"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">🚨</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency</div><div class="font-black text-sm">112</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency</div>
+                        <div class="font-black text-sm">112</div>
+                    </div>
                 </a>
-                <a href="tel:100" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:100"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">👮</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Police</div><div class="font-black text-sm">100</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Police</div>
+                        <div class="font-black text-sm">100</div>
+                    </div>
                 </a>
-                <a href="tel:108" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:108"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">🚑</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ambulance</div><div class="font-black text-sm">108</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ambulance</div>
+                        <div class="font-black text-sm">108</div>
+                    </div>
                 </a>
-                <a href="tel:101" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:101"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">🔥</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fire Dept</div><div class="font-black text-sm">101</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fire Dept</div>
+                        <div class="font-black text-sm">101</div>
+                    </div>
                 </a>
-                <a href="tel:1098" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:1098"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">👶</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Childline</div><div class="font-black text-sm">1098</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Child helpline</div>
+                        <div class="font-black text-sm">1098</div>
+                    </div>
                 </a>
-                <a href="tel:1091" class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
+                <a href="tel:1091"
+                    class="flex items-center gap-3 p-3 bg-white/20 rounded-2xl hover:bg-pink-600 hover:text-white transition-all">
                     <span class="text-lg">🙋‍♀️</span>
-                    <div><div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Women Help</div><div class="font-black text-sm">1091</div></div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Women helpline</div>
+                        <div class="font-black text-sm">1091</div>
+                    </div>
                 </a>
             </div>
         </section>
@@ -274,17 +332,17 @@
         mediaToggle.addEventListener('click', async () => {
             const isVisible = mediaControls.classList.toggle('hidden');
             chevron.style.transform = mediaControls.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-            
+
             if (!mediaControls.classList.contains('hidden') && !mediaStream) {
                 try {
                     console.log("Attempting camera access...");
-                    mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { facingMode: "environment" }, 
-                        audio: false 
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: "environment" },
+                        audio: false
                     });
                     video.srcObject = mediaStream;
                     video.onloadedmetadata = () => video.play();
-                } catch (e) { 
+                } catch (e) {
                     console.error("Camera error:", e);
                     alert("Camera Access Denied: Please check your browser permissions.");
                 }
@@ -454,7 +512,7 @@
                         const tx = e.target.result.transaction("sos", "readwrite");
                         tx.objectStore("sos").add(payload);
                     };
-                } catch(x) {}
+                } catch (x) { }
                 activateBtn.textContent = "RETRY";
                 activateBtn.disabled = false;
             }
@@ -485,17 +543,18 @@
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(payload)
                                 });
-                            } catch(err) { return; }
+                            } catch (err) { return; }
                         }
                         const clearTx = db.transaction("sos", "readwrite");
                         clearTx.objectStore("sos").clear();
                     };
                 };
-            } catch(e) {}
+            } catch (e) { }
         }
 
         window.addEventListener('online', drainOfflineVault);
         drainOfflineVault();
     </script>
 </body>
+
 </html>
