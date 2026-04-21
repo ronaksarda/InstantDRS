@@ -487,7 +487,12 @@
         filterSeverity.addEventListener('change', renderFiltered);
         filterType.addEventListener('change', renderFiltered);
 
+        let lastUpdateTimestamp = 0;
+
         function handleNewData(data) {
+            if (data.last_update && data.last_update === lastUpdateTimestamp) return;
+            if (data.last_update) lastUpdateTimestamp = data.last_update;
+
             const newIncidents = data.incidents || [];
             const newResolved = data.resolved || [];
             const oldLen = allIncidents.length;
