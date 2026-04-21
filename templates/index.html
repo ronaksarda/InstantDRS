@@ -379,6 +379,20 @@
             mediaRecorder.start();
         }
 
+        proofBtn.addEventListener('click', () => {
+            if (!mediaStream) return;
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            currentImageB64 = dataUrl.split(',')[1];
+            previewImg.src = dataUrl;
+            imagePreview.classList.remove('hidden');
+            document.getElementById('evidence-preview').classList.remove('hidden');
+            statusMsg.textContent = "PHOTO CAPTURED ✓";
+        });
+
         videoRecBtn.addEventListener('click', () => {
             if (!isRecordingVideo) {
                 if (!mediaStream) return;
@@ -459,11 +473,21 @@
         activateBtn.addEventListener('click', async () => {
             if (activateBtn.disabled) return;
 
-            if (!selectedType) { statusMsg.textContent = "⚠ SELECT EMERGENCY TYPE"; return; }
+            if (!selectedType) { 
+                alert("⚠ PLEASE SELECT AN EMERGENCY TYPE"); 
+                statusMsg.textContent = "⚠ SELECT EMERGENCY TYPE"; 
+                return; 
+            }
             const text = emergencyText.value.trim();
-            if (!text) { statusMsg.textContent = "⚠ DESCRIBE THE EMERGENCY"; return; }
+            if (!text) { 
+                alert("⚠ PLEASE DESCRIBE THE EMERGENCY"); 
+                statusMsg.textContent = "⚠ DESCRIBE THE EMERGENCY"; 
+                return; 
+            }
             if (locationData.lat === 0 && locationData.lng === 0 && !locationData.text) {
-                statusMsg.textContent = "⚠ PROVIDE LOCATION (GPS or Manual)"; return;
+                alert("⚠ PLEASE PROVIDE A LOCATION (Use GPS or type it)"); 
+                statusMsg.textContent = "⚠ PROVIDE LOCATION (GPS or Manual)"; 
+                return;
             }
 
             activateBtn.disabled = true;
@@ -490,7 +514,8 @@
 
             try {
                 const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 20000);
+                // Increased timeout to 60s because Gemini can be very slow sometimes
+                const timeout = setTimeout(() => controller.abort(), 60000);
                 const response = await fetch('/triage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -502,8 +527,14 @@
                     const result = await response.json();
                     sessionStorage.setItem('triage_result', JSON.stringify(result));
                     window.location.href = '/submitted.html';
-                } else { throw new Error(); }
+                } else { 
+                    const errText = await response.text();
+                    console.error("Server Error:", errText);
+                    throw new Error("Server rejected the request: " + response.status); 
+                }
             } catch (e) {
+                console.error("SOS Fetch Error:", e);
+                alert("Submission failed! Error: " + e.message + "\nCheck your connection or wait and retry.");
                 statusMsg.textContent = "OFFLINE — SAVED LOCALLY";
                 try {
                     const req = indexedDB.open("InstantDRSVault", 1);
