@@ -306,14 +306,26 @@ def resolve_incident():
     incident_id = data.get('id')
     if not incident_id:
         return jsonify({"error": "No ID"}), 400
+    
     queue = load_queue()
-    queue['incidents'] = [inc for inc in queue['incidents'] if inc['id'] != incident_id]
-    resolved = queue.get('resolved', [])
-    resolved.append({"id": incident_id, "resolved_at": int(time.time())})
-    queue['resolved'] = resolved[-50:]
-    queue['last_update'] = int(time.time())
-    save_queue(queue)
-    return jsonify({"status": "resolved"}), 200
+    # Find the incident to store full data
+    incident = next((inc for inc in queue.get('incidents', []) if inc['id'] == incident_id), None)
+    
+    if incident:
+        incident['status'] = 'resolved'
+        incident['resolved_at'] = int(time.time())
+        # Remove from active incidents
+        queue['incidents'] = [inc for inc in queue['incidents'] if inc['id'] != incident_id]
+        
+        resolved = queue.get('resolved', [])
+        resolved.append(incident)
+        # Keep only last 50 resolved cases
+        queue['resolved'] = resolved[-50:]
+        queue['last_update'] = int(time.time())
+        save_queue(queue)
+        return jsonify({"status": "resolved"}), 200
+    
+    return jsonify({"error": "Incident not found"}), 404
 
 @app.route('/api/stream')
 def stream():

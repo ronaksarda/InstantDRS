@@ -163,6 +163,7 @@
         let audioCtx = null;
         let sirenEnabled = false;
         let allIncidents = [];
+        let resolvedIncidents = [];
         let acknowledged = JSON.parse(localStorage.getItem('ack_ids') || '[]');
         let currentTab = 'active';
         let severityChart = null;
@@ -408,10 +409,9 @@
         }
 
         function renderHandled() {
-            const handled = allIncidents.filter(inc => acknowledged.includes(inc.id));
             handledGrid.innerHTML = '';
 
-            const count = handled.length;
+            const count = resolvedIncidents.length;
             tabHandled.textContent = `✅ Resolved Cases (${count})`;
 
             if (count === 0) {
@@ -420,7 +420,8 @@
                 return;
             }
 
-            handled.forEach(inc => {
+            // Show latest resolved first
+            [...resolvedIncidents].reverse().forEach(inc => {
                 handledGrid.appendChild(renderCard(inc, { handled: true }));
             });
         }
@@ -450,6 +451,7 @@
 
         function handleNewData(data) {
             const newIncidents = data.incidents || [];
+            const newResolved = data.resolved || [];
             const oldLen = allIncidents.length;
             
             if (newIncidents.length > oldLen) {
@@ -465,6 +467,7 @@
             }
             
             allIncidents = newIncidents;
+            resolvedIncidents = newResolved;
             updateStats(data);
             updateCharts();
             if (currentTab === 'active') renderFiltered();
