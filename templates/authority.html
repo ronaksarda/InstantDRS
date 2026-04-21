@@ -14,7 +14,7 @@
         body { font-family: 'Outfit', sans-serif; background: #020617; color: white; overflow-x: hidden; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .card-gold { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); position: relative; overflow: hidden; }
-        .card-gold::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.1), transparent); }
+        .card-gold::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.1), transparent); pointer-events: none; }
         .pulse-red { animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 
             0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
@@ -148,6 +148,14 @@
         </div>
         <div id="handled-grid" class="hidden grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3"></div>
     </main>
+
+    <!-- EXPAND CARD MODAL -->
+    <div id="incident-modal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm p-4 md:p-10 overflow-y-auto flex items-center justify-center">
+        <div id="modal-content" class="bg-slate-900 border border-white/10 rounded-[2rem] p-6 w-full max-w-4xl relative">
+            <button onclick="document.getElementById('incident-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white hover:text-pink-500 text-3xl font-black transition-colors">&times;</button>
+            <div id="modal-body" class="mt-4"></div>
+        </div>
+    </div>
 
     <script>
         const grid = document.getElementById('incidents-grid');
@@ -350,13 +358,14 @@
             const isGold = inc.severity === 10;
             const isHandled = opts.handled || false;
 
-            let cls = 'p-5 rounded-[2rem] bg-slate-900 border-2 transition-all ';
+            let cls = 'incident-card p-5 rounded-[2rem] bg-slate-900 border-2 transition-all cursor-pointer ';
             if (isHandled) cls += 'border-green-600/30';
             else if (isAck) cls += 'border-green-600/40 opacity-60';
             else if (isGold) cls += 'card-gold border-amber-500 pulse-red';
             else if (opts.isTop) cls += 'border-pink-600 ring-2 ring-pink-600/30';
-            else cls += 'border-slate-800 hover:border-slate-600';
+            else cls += 'border-slate-800 hover:border-slate-600 hover:scale-[1.02]';
             card.className = cls;
+            card.setAttribute('data-id', inc.id);
 
             const locationStr = inc.location_text || (inc.lat && inc.lng ? `${Number(inc.lat).toFixed(3)}, ${Number(inc.lng).toFixed(3)}` : 'Unknown');
             const photo = inc.image_url ? `<img src="${inc.image_url}" class="w-full rounded-xl mb-3 max-h-44 object-cover border border-white/5" />` : '';
@@ -401,9 +410,9 @@
                 ${photo}
                 ${videoPlayer}
                 ${audioPlayer}
-                <p class="text-slate-400 text-sm mb-3 leading-relaxed">${(inc.text || '').substring(0, 140)}${(inc.text || '').length > 140 ? '...' : ''}</p>
+                <p class="text-slate-400 text-sm mb-3 leading-relaxed pointer-events-none">${(inc.text || '').substring(0, 140)}${(inc.text || '').length > 140 ? '...' : ''}</p>
                 ${aiInfo}
-                <div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider flex-wrap">
+                <div class="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider flex-wrap mt-2">
                     <span>📍 ${locationStr}</span>
                     ${inc.has_image ? '<span class="text-green-500">📷</span>' : ''}
                     ${inc.has_video ? '<span class="text-red-500">📹</span>' : ''}
@@ -416,18 +425,67 @@
             return card;
         }
 
+        function expandCard(id) {
+            const inc = [...allIncidents, ...resolvedIncidents].find(i => i.id === id);
+            if (!inc) return;
+            
+            const modal = document.getElementById('incident-modal');
+            const body = document.getElementById('modal-body');
+            
+            const photo = inc.image_url ? `<img src="${inc.image_url}" class="w-full rounded-2xl mb-4 border border-white/10" />` : '';
+            const videoPlayer = inc.video_url ? `<video controls src="${inc.video_url}" class="w-full rounded-2xl mb-4 border border-white/10"></video>` : '';
+            const audioPlayer = inc.audio_url ? `<audio controls src="${inc.audio_url}" class="w-full mb-4 h-10 rounded-full outline-none" style="filter: invert(0.9) hue-rotate(180deg);"></audio>` : '';
+
+            body.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-black uppercase tracking-tighter text-white">${inc.type || 'Emergency'}</h2>
+                    <span class="px-4 py-1.5 ${severityColor(inc.severity)} text-white rounded-full text-xs font-black uppercase tracking-widest">SEV ${inc.severity}/10</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        ${photo}
+                        ${videoPlayer}
+                        ${audioPlayer}
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Original Report</h3>
+                            <p class="text-slate-300 text-lg leading-relaxed whitespace-pre-wrap bg-white/5 p-4 rounded-xl border border-white/5">${inc.text || 'No description provided'}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-[10px] font-black text-pink-500 uppercase tracking-widest mb-2">AI Summary & Risk Analysis</h3>
+                            <div class="bg-pink-900/20 border border-pink-500/20 p-4 rounded-xl space-y-2">
+                                <p class="text-pink-100 font-medium">${inc.summary || 'N/A'}</p>
+                                ${inc.secondary_risks && inc.secondary_risks !== 'None' ? `<p class="text-orange-400 font-bold text-sm mt-2">⚠ Secondary Risks: ${inc.secondary_risks}</p>` : ''}
+                                ${inc.recommended_units ? `<p class="text-cyan-400 font-bold text-sm">🚒 Dispatch: ${inc.recommended_units}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
         // --- ROBUST EVENT DELEGATION FOR BUTTONS ---
         // This ensures buttons work even if inline scripts are blocked by the browser.
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('button[data-action]');
-            if (!btn) return;
-            const action = btn.getAttribute('data-action');
-            const id = btn.getAttribute('data-id');
-            
-            if (action === 'ack') {
-                acknowledgeIncident(id);
-            } else if (action === 'resolve') {
-                resolveIncident(id);
+            if (btn) {
+                const action = btn.getAttribute('data-action');
+                const id = btn.getAttribute('data-id');
+                
+                if (action === 'ack') {
+                    acknowledgeIncident(id);
+                } else if (action === 'resolve') {
+                    resolveIncident(id);
+                }
+                return; // Stop processing so we don't trigger the card expansion
+            }
+
+            // Clicked a card, but not an interactive element? Expand it!
+            const card = e.target.closest('.incident-card');
+            if (card && !e.target.closest('a, audio, video, button')) {
+                expandCard(card.getAttribute('data-id'));
             }
         });
 
