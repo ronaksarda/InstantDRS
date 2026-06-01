@@ -34,12 +34,15 @@
 
     <nav
         class="p-5 flex justify-between items-center sticky top-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-white/5">
-        <div>
-            <h1 class="text-2xl font-black uppercase tracking-tighter">Instant<span class="text-pink-600">DRS</span>
-                Dispatch</h1>
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                <span id="connection-status" class="text-green-500">● Connecting...</span>
-            </p>
+        <div class="flex items-center gap-4">
+            <a href="/" class="text-slate-500 hover:text-pink-500 transition-colors text-xl" title="Back to Home">🏠</a>
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter">Instant<span class="text-pink-600">DRS</span>
+                    Dispatch</h1>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <span id="connection-status" class="text-green-500">● Connecting...</span>
+                </p>
+            </div>
         </div>
         <div class="flex gap-2 items-center flex-wrap">
             <span id="live-count"
@@ -335,6 +338,26 @@
             }
         }
 
+        async function deleteIncident(id) {
+            if(!confirm("Are you sure you want to permanently delete this incident and its photos/videos?")) return;
+            console.log("Deleting incident:", id);
+            try {
+                const res = await fetch('/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                if (res.ok) {
+                    console.log("Incident deleted");
+                    await pollFallback();
+                } else {
+                    alert("Failed to delete incident.");
+                }
+            } catch (e) { 
+                console.error("Delete error:", e);
+            }
+        }
+
         function updateStats(data) {
             const stats = data.stats || {};
             document.getElementById('stat-total').textContent = stats.total_received || 0;
@@ -378,16 +401,21 @@
                     ? `<span class="px-3 py-1 bg-green-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest">✓ RESOLVED</span>`
                     : `<span class="sev-badge px-3 py-1 ${severityColor(inc.severity)} text-white rounded-full text-[10px] font-black uppercase tracking-widest">SEV ${inc.severity}/10</span>`;
 
-            const actions = isHandled ? '' : `
+            const actions = `
                 <div class="flex gap-2 mt-3">
+                    ${!isHandled ? `
                     <a href="${getMapUrl(inc)}" target="_blank" class="flex-1 py-2.5 ${isGold ? 'bg-amber-500 hover:bg-amber-600 text-black' : 'bg-pink-600 hover:bg-pink-700'} text-center rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
                         📍 Locate
                     </a>
                     <button data-action="ack" data-id="${inc.id}" class="px-3 py-2.5 ${isAck ? 'bg-green-700' : 'bg-slate-800 hover:bg-green-700'} rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
                         ${isAck ? '✓' : 'ACK'}
                     </button>
-                    <button data-action="resolve" data-id="${inc.id}" class="px-3 py-2.5 bg-slate-800 hover:bg-green-700 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all" title="Mark as resolved and remove from active queue">
+                    <button data-action="resolve" data-id="${inc.id}" class="px-3 py-2.5 bg-slate-800 hover:bg-green-700 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all" title="Mark as resolved">
                         ✓ RESOLVE
+                    </button>
+                    ` : ''}
+                    <button data-action="delete" data-id="${inc.id}" class="px-3 py-2.5 bg-slate-800 hover:bg-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${isHandled ? 'flex-1' : ''}" title="Permanently delete incident and media">
+                        🗑️ DEL
                     </button>
                 </div>`;
 
@@ -478,6 +506,8 @@
                     acknowledgeIncident(id);
                 } else if (action === 'resolve') {
                     resolveIncident(id);
+                } else if (action === 'delete') {
+                    deleteIncident(id);
                 }
                 return; // Stop processing so we don't trigger the card expansion
             }

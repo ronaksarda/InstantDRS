@@ -5,6 +5,7 @@ import time
 import base64
 import re
 from functools import wraps
+from collections import defaultdict
 from flask import Flask, request, jsonify, render_template, Response, session, redirect
 from google import genai
 from google.genai import types
@@ -14,11 +15,16 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "instantdrs-secret-2026")
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 CPP_BINARY = "priority_engine.exe" if os.name == 'nt' else "./priority_engine"
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "live_queue.json")
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "static", "uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "protected_uploads")
 AUTHORITY_PIN = os.getenv("AUTHORITY_PIN", "1234")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -80,6 +86,32 @@ def auth_required(f):
             return redirect('/login')
         return f(*args, **kwargs)
     return decorated
+
+# Simple In-Memory Rate Limiter
+request_counts = defaultdict(list)
+
+def rate_limit(limit=5, window=60):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            ip = request.remote_addr or '127.0.0.1'
+            now = time.time()
+            request_counts[ip] = [t for t in request_counts[ip] if now - t < window]
+            if len(request_counts[ip]) >= limit:
+                return jsonify({"error": "Rate limit exceeded. Please wait before submitting again."}), 429
+            request_counts[ip].append(now)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    return response
 
 GEMINI_SYSTEM_PROMPT = """You are InstantDRS, a high-precision AI emergency dispatch triage agent.
 
@@ -177,6 +209,7 @@ def submitted():
     return render_template('submitted.html')
 
 @app.route('/triage', methods=['POST'])
+@rate_limit(limit=5, window=60)
 def triage():
     data = request.json
     if not data:
@@ -201,7 +234,7 @@ def triage():
             img_filename = f"{incident_id}.jpg"
             with open(os.path.join(UPLOAD_DIR, img_filename), 'wb') as f:
                 f.write(img_data)
-            image_url = f"/static/uploads/{img_filename}"
+            image_url = f"/protected_uploads/{img_filename}"
         except Exception as e:
             print(f"IMG DECODE ERROR: {e}")
 
@@ -214,7 +247,7 @@ def triage():
             audio_filename = f"{incident_id}.webm"
             with open(os.path.join(UPLOAD_DIR, audio_filename), 'wb') as f:
                 f.write(audio_data)
-            audio_url = f"/static/uploads/{audio_filename}"
+            audio_url = f"/protected_uploads/{audio_filename}"
         except Exception as e:
             print(f"AUDIO DECODE ERROR: {e}")
 
@@ -227,7 +260,7 @@ def triage():
             video_filename = f"{incident_id}.webm" # Browser MediaRecorder uses WebM
             with open(os.path.join(UPLOAD_DIR, video_filename), 'wb') as f:
                 f.write(video_data)
-            video_url = f"/static/uploads/{video_filename}"
+            video_url = f"/protected_uploads/{video_filename}"
         except Exception as e:
             print(f"VIDEO DECODE ERROR: {e}")
 
@@ -313,7 +346,14 @@ def triage():
         }
     }), 200
 
+@app.route('/protected_uploads/<path:filename>')
+@auth_required
+def serve_protected_upload(filename):
+    from flask import send_from_directory
+    return send_from_directory(UPLOAD_DIR, filename)
+
 @app.route('/api/feed')
+@auth_required
 def api_feed():
     return jsonify(load_queue())
 
@@ -348,7 +388,48 @@ def resolve_incident():
     
     return jsonify({"error": "Incident not found"}), 404
 
+@app.route('/api/delete', methods=['POST'])
+@auth_required
+def delete_incident():
+    data = request.json
+    incident_id = data.get('id')
+    if not incident_id:
+        return jsonify({"error": "No ID"}), 400
+    
+    queue = load_queue()
+    incidents = queue.get('incidents', [])
+    resolved = queue.get('resolved', [])
+    
+    incident = next((inc for inc in incidents if inc['id'] == incident_id), None)
+    if not incident:
+        incident = next((inc for inc in resolved if inc['id'] == incident_id), None)
+        
+    if incident:
+        # Delete associated files from disk
+        for url_key in ['image_url', 'audio_url', 'video_url']:
+            url = incident.get(url_key)
+            if url and url.startswith('/protected_uploads/'):
+                filename = url.split('/')[-1]
+                filepath = os.path.join(UPLOAD_DIR, filename)
+                try:
+                    if os.path.exists(filepath):
+                        os.remove(filepath)
+                except Exception as e:
+                    print(f"Error deleting file {filepath}: {e}")
+                    
+        # Remove from queues
+        queue['incidents'] = [inc for inc in incidents if inc['id'] != incident_id]
+        queue['resolved'] = [inc for inc in resolved if inc['id'] != incident_id]
+        queue['last_update'] = int(time.time())
+        if 'stats' in queue:
+            queue['stats']['active_count'] = len(queue['incidents'])
+        save_queue(queue)
+        return jsonify({"status": "deleted"}), 200
+        
+    return jsonify({"error": "Incident not found"}), 404
+
 @app.route('/api/stream')
+@auth_required
 def stream():
     def event_stream():
         last_update = 0
