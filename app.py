@@ -83,6 +83,8 @@ def auth_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('authority_auth'):
+            if request.path.startswith('/api/') or request.path.startswith('/protected_uploads/'):
+                return jsonify({"error": "Unauthorized"}), 401
             return redirect('/login')
         return f(*args, **kwargs)
     return decorated
@@ -94,7 +96,11 @@ def rate_limit(limit=5, window=60):
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            ip = request.remote_addr or '127.0.0.1'
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            if ip:
+                ip = ip.split(',')[0].strip()
+            else:
+                ip = '127.0.0.1'
             now = time.time()
             request_counts[ip] = [t for t in request_counts[ip] if now - t < window]
             if len(request_counts[ip]) >= limit:
@@ -110,7 +116,7 @@ def add_security_headers(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '-1'
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     return response
 
 GEMINI_SYSTEM_PROMPT = """You are InstantDRS, a high-precision AI emergency dispatch triage agent.

@@ -323,12 +323,12 @@
                     const contentType = res.headers.get("content-type");
                     if (contentType && contentType.indexOf("application/json") !== -1) {
                         console.log("Incident resolved on server:", id);
-                        // Force an immediate fetch of the new state so the UI updates instantly
                         await pollFallback();
                     } else {
-                        console.error("Session expired or invalid response");
-                        alert("Session expired! Please refresh the page and log in again.");
+                        window.location.href = '/login';
                     }
+                } else if (res.status === 401) {
+                    window.location.href = '/login';
                 } else {
                     console.error("Failed to resolve incident:", await res.text());
                     alert("Failed to resolve incident. Check console or login status.");
@@ -350,6 +350,8 @@
                 if (res.ok) {
                     console.log("Incident deleted");
                     await pollFallback();
+                } else if (res.status === 401) {
+                    window.location.href = '/login';
                 } else {
                     alert("Failed to delete incident.");
                 }
@@ -628,6 +630,10 @@
         async function pollFallback() {
             try {
                 const res = await fetch('/api/feed');
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
                 handleNewData(await res.json());
             } catch (e) { }
         }
