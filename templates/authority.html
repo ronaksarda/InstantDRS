@@ -244,10 +244,20 @@
         }
 
         sirenBtn.addEventListener('click', () => {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            sirenEnabled = true;
-            sirenBtn.textContent = "🔊 Armed";
-            sirenBtn.classList.replace('bg-slate-800', 'bg-green-600');
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            sirenEnabled = !sirenEnabled;
+            
+            if (sirenEnabled) {
+                sirenBtn.textContent = "🔊 Armed";
+                sirenBtn.classList.replace('bg-slate-800', 'bg-green-600');
+                // Play immediately so judges can hear it works
+                playSiren();
+            } else {
+                sirenBtn.textContent = "🔊 Siren";
+                sirenBtn.classList.replace('bg-green-600', 'bg-slate-800');
+            }
         });
 
         function playSiren() {
