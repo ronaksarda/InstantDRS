@@ -194,7 +194,7 @@ def login():
         return render_template('login.html', error=True)
     return render_template('login.html', error=False)
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('authority_auth', None)
     return redirect('/login')

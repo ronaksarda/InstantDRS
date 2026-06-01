@@ -662,8 +662,14 @@
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 console.log("Security breach detected: Tab lost focus. Terminating session.");
+                navigator.sendBeacon('/logout');
                 window.location.href = '/logout';
             }
+        });
+
+        // Instantly kill session on the server if they hit Refresh or close the page
+        window.addEventListener('beforeunload', () => {
+            navigator.sendBeacon('/logout');
         });
 
         // Block Right-Click and DevTools shortcuts (Ctrl+Shift+I / F12)
