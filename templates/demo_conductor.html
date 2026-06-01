@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>InstantDRS — Official 3-Minute Presentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #ff004c;
+    --accent-glow: rgba(255, 0, 76, 0.4);
+    --bg: #02040a;
+    --panel: rgba(13, 17, 23, 0.8);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing: antialiased; }
+  body { 
+    background: var(--bg); 
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden; 
+    width: 1280px; 
+    height: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #stage { 
+    position: relative; 
+    width: 1280px; 
+    height: 720px; 
+    background: #000;
+    overflow: hidden;
+    box-shadow: 0 0 100px rgba(0,0,0,1);
+  }
+  
+  #site-frame { 
+    position: absolute; 
+    inset: 0; 
+    width: 100%; 
+    height: 100%; 
+    border: none; 
+    display: none;
+    background: #000;
+  }
+
+  /* Overlay System */
+  .overlay-layer { 
+    position: absolute; 
+    inset: 0; 
+    pointer-events: none; 
+    z-index: 100;
+  }
+
+  /* Cinematic Transitions */
+  .scene { 
+    position: absolute; 
+    inset: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    opacity: 0; 
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1.05);
+    background: #000;
+  }
+  .scene.active { 
+    opacity: 1; 
+    transform: scale(1);
+    pointer-events: auto; 
+  }
+
+  /* Start Screen */
+  #start-screen {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #02040a 100%);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s ease;
+  }
+  #btn-start {
+    padding: 24px 64px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 40px var(--accent-glow);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+  #btn-start:hover { transform: scale(1.05); box-shadow: 0 0 60px var(--accent); }
+
+  /* Scenes Styling */
+  .glitch-text { font-weight: 900; font-size: 84px; letter-spacing: -4px; position: relative; }
+  .glitch-text span { color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); }
+  
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    width: 280px;
+  }
+  .stat-num { font-size: 64px; font-weight: 900; color: var(--accent); line-height: 1; }
+  .stat-label { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.5); margin-top: 12px; }
+
+  /* Subtitles */
+  #subtitle-bar {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px 32px;
+    font-size: 18px;
+    line-height: 1.5;
+    text-align: center;
+    color: #fff;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Progress */
+  #timeline-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    z-index: 300;
+  }
+  #timeline-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff004c, #ff7b00);
+    box-shadow: 0 0 15px var(--accent);
+  }
+  #timer-display {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+    z-index: 300;
+  }
+
+  /* Tech Badges */
+  .badge-row { display: flex; gap: 12px; margin-top: 40px; }
+  .badge { 
+    padding: 8px 20px; 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 100px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    color: rgba(255,255,255,0.7); 
+  }
+
+  /* Annotation */
+  .annot {
+    position: absolute;
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 150;
+    animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes bounce-in { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+  <div style="font-size:14px; color:var(--accent); letter-spacing:8px; margin-bottom:20px; text-transform:uppercase; font-weight:900">Official Demo</div>
+  <h1 style="font-size:64px; margin-bottom:40px; font-weight:900">Instant<span>DRS</span></h1>
+  <button id="btn-start" onclick="startDemo()">Start Recording</button>
+  <p style="margin-top:20px; color:rgba(255,255,255,0.3); font-size:12px">Duration: Exactly 180.0s</p>
+</div>
+
+<div id="stage">
+  <iframe id="site-frame" src="http://127.0.0.1:5000/"></iframe>
+  
+  <div class="overlay-layer">
+    <!-- Scene 0: Hook -->
+    <div class="scene" id="s0">
+      <div style="font-size:18px; color:var(--accent); letter-spacing:10px; margin-bottom:16px; font-weight:900">2026 GOOGLE SOLUTION CHALLENGE</div>
+      <h1 class="glitch-text">Instant<span>DRS</span></h1>
+      <p style="font-size:24px; color:rgba(255,255,255,0.5); margin-top:10px; font-weight:300">Turning chaos into clarity — in milliseconds.</p>
+    </div>
+
+    <!-- Scene 1: Why? (Problem) -->
+    <div class="scene" id="s1">
+      <h2 style="font-size:42px; font-weight:900; margin-bottom:60px">The <span>Triage Lag</span> Crisis</h2>
+      <div style="display:flex; gap:30px">
+        <div class="stat-card"><div class="stat-num">11m</div><div class="stat-label">Avg Dispatch Delay</div></div>
+        <div class="stat-card"><div class="stat-num">40%</div><div class="stat-label">Mis-Prioritized Calls</div></div>
+        <div class="stat-card"><div class="stat-num">∞</div><div class="stat-label">Lives at Risk</div></div>
+      </div>
+    </div>
+
+    <!-- Scene 2: What? (Solution) -->
+    <div class="scene" id="s2">
+      <h2 style="font-size:32px; color:rgba(255,255,255,0.4); margin-bottom:10px">Introducing</h2>
+      <h1 style="font-size:72px; font-weight:900; margin-bottom:40px">Instant<span>DRS</span></h1>
+      <div style="display:flex; gap:12px">
+        <div class="badge" style="background:rgba(255,0,76,0.1); border-color:rgba(255,0,76,0.3); color:var(--accent)">🤖 Gemini 1.5 Flash</div>
+        <div class="badge" style="background:rgba(255,0,76,0.1); border-color:rgba(255,0,76,0.3); color:var(--accent)">⚡ C++ Priority Engine</div>
+        <div class="badge" style="background:rgba(255,0,76,0.1); border-color:rgba(255,0,76,0.3); color:var(--accent)">📡 Real-Time SSE</div>
+      </div>
+    </div>
+
+    <!-- AI Analysis Display -->
+    <div class="scene" id="s-ai" style="background: rgba(2,4,10,0.95)">
+      <h2 style="color:var(--accent); font-size:32px; font-weight:900; margin-bottom:30px">🤖 Multimodal AI Analysis</h2>
+      <pre style="font-family:'JetBrains Mono', monospace; font-size:16px; background:#0d1117; padding:40px; border-radius:24px; border:1px solid rgba(255,255,255,0.1); color:#86efac; line-height:1.8; width:800px">
+{
+  "severity": 9,
+  "type": "Fire",
+  "summary": "Multi-vehicle fire, fuel leak",
+  "recommended": "2 Engines + 1 ALS",
+  "reasoning": "Image confirms active flames."
+}</pre>
+    </div>
+
+    <!-- C++ Engine Display -->
+    <div class="scene" id="s-cpp" style="background: radial-gradient(circle at center, #1a1a2e 0%, #02040a 100%);">
+      <h2 style="font-size:36px; font-weight:900; margin-bottom:40px">⚡ C++ Priority Engine</h2>
+      <div style="font-family:'JetBrains Mono'; font-size:20px; color:#fff; display:flex; flex-direction:column; gap:10px">
+        <div style="color:rgba(255,255,255,0.3)">// Priority Merge Sort O(N log N)</div>
+        <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; border:1px solid rgba(124,58,237,0.3)">
+          [SEV 7] Accident -> [SEV 10] Violence -> [SEV 9] Fire
+        </div>
+        <div style="text-align:center; margin:10px 0; color:var(--accent)">RUNNING...</div>
+        <div style="background:rgba(219,39,119,0.1); padding:20px; border-radius:12px; border:1px solid var(--accent)">
+          [SEV 10] Violence -> [SEV 9] Fire -> [SEV 7] Accident
+        </div>
+        <div style="margin-top:20px; text-align:center; font-weight:900; font-size:14px; color:#a78bfa; letter-spacing:4px">SORT TIME: 0.8ms</div>
+      </div>
+    </div>
+
+    <!-- End Scene -->
+    <div class="scene" id="s8">
+       <h1 style="font-size:84px; font-weight:900; margin-bottom:10px">Instant<span>DRS</span></h1>
+       <p style="font-size:24px; font-weight:300; color:rgba(255,255,255,0.6); margin-bottom:60px">Built to save lives.</p>
+       <div class="badge-row">
+         <div class="badge">Google Solution Challenge 2026</div>
+         <div class="badge">Gemini 1.5 Flash</div>
+         <div class="badge">C++17</div>
+         <div class="badge">Firebase</div>
+       </div>
+       <div id="finish-msg" style="margin-top:40px; font-size:14px; color:var(--accent); display:none; font-weight:900; letter-spacing:4px">PRESENTATION COMPLETE</div>
+    </div>
+  </div>
+
+  <div id="ann-container" style="position:absolute; inset:0; pointer-events:none; z-index:150"></div>
+  <div id="subtitle-bar"></div>
+  <div id="timer-display">0:00 / 3:00</div>
+  <div id="timeline-container"><div id="timeline-fill"></div></div>
+</div>
+
+<script>
+const TOTAL = 180.0;
+let startTime = 0;
+let frameId = null;
+const frame = document.getElementById('site-frame');
+const subtitle = document.getElementById('subtitle-bar');
+const progress = document.getElementById('timeline-fill');
+const timer = document.getElementById('timer-display');
+const annContainer = document.getElementById('ann-container');
+
+function fmt(s){
+  const m = Math.floor(s/60);
+  const sec = Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+function showScene(id){
+  document.querySelectorAll('.scene').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  if(el) { el.style.display = 'flex'; setTimeout(()=>el.classList.add('active'), 50); }
+}
+
+function showSite(url, show=true){
+  frame.style.display = show ? 'block' : 'none';
+  if(show && url && !frame.src.includes(url)) frame.src = url;
+}
+
+function annotate(text, t, l, dur=4000){
+  const div = document.createElement('div');
+  div.className = 'annot';
+  div.style.top = t+'px';
+  div.style.left = l+'px';
+  div.textContent = text;
+  annContainer.appendChild(div);
+  setTimeout(()=>div.remove(), dur);
+}
+
+function speak(text, duration=5){
+  subtitle.textContent = text;
+  subtitle.style.opacity = 1;
+  const synth = window.speechSynthesis;
+  synth.cancel();
+  const ut = new SpeechSynthesisUtterance(text);
+  ut.rate = 1.0;
+  ut.pitch = 1.0;
+  const voices = synth.getVoices();
+  ut.voice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium')) || voices[0];
+  synth.speak(ut);
+  setTimeout(() => { if(subtitle.textContent === text) subtitle.style.opacity = 0; }, duration * 1000);
+}
+
+const timeline = [
+  [0.0, () => { showScene('s0'); showSite('', false); speak("Every second counts. In a medical emergency, the difference between life and death is how fast the right help arrives."); }],
+  [12.0, () => { speak("Current systems suffer from Triage Lag — phone queues and manual logging that waste precious minutes."); }],
+  [20.0, () => { showScene('s1'); speak("Studies show average dispatch delays of 4 to 11 minutes, with up to 40% of calls mis-prioritized. This is why we built InstantDRS."); }],
+  [40.0, () => { showScene('s2'); speak("InstantDRS is an AI-powered emergency dispatch platform. It combines Google Gemini 1.5 Flash for triage, a C++ priority engine, and a real-time command center."); }],
+  [55.0, () => { showSite('http://127.0.0.1:5000/'); showScene(''); speak("Citizens can report an emergency in under 30 seconds. They select the type, severity, and provide a description."); }],
+  [65.0, () => { annotate("📍 Auto-GPS Lock", 400, 100); annotate("🔥 Instant Selection", 150, 200); speak("The interface is optimized for high-stress scenarios, capturing GPS coordinates and critical incident data instantly."); }],
+  [75.0, () => { annotate("📸 Evidence Vault", 550, 400); speak("Reporters can attach photos, video, or voice notes — providing visual intelligence to dispatchers before units even deploy."); }],
+  [85.0, () => { showSite('', false); showScene('s-ai'); speak("When SOS is pressed, Gemini 1.5 Flash analyzes the media and text, producing a clinical triage report with recommended units in seconds."); }],
+  [110.0, () => { showScene('s-cpp'); speak("This data is piped into our C++ Priority Engine. It reorders the entire city's incident queue in under one millisecond using a custom merge-sort."); }],
+  [130.0, () => { showSite('http://127.0.0.1:5000/demo-login'); showScene(''); speak("In the Command Center, dispatchers receive a live stream of sorted incidents via Server-Sent Events. The most critical cases are always on top."); }],
+  [145.0, () => { annotate("🔴 Critical Priority", 180, 50); annotate("🚒 Dispatch Units", 350, 50); speak("Every incident card includes the AI summary, GPS mapping, and full media evidence for immediate action."); }],
+  [165.0, () => { showSite('', false); showScene('s8'); speak("InstantDRS. Multimodal AI. Sub-millisecond sorting. Real-time intelligence. Built to save lives. Thank you."); }],
+  [180.0, () => { 
+    document.getElementById('finish-msg').style.display = 'block'; 
+    subtitle.style.opacity = 0;
+    cancelAnimationFrame(frameId);
+  }]
+];
+
+let nextIdx = 0;
+function tick(){
+  const now = (Date.now() - startTime) / 1000;
+  if(now >= TOTAL) {
+    progress.style.width = '100%';
+    timer.textContent = '3:00 / 3:00';
+    if(nextIdx < timeline.length && timeline[nextIdx][0] <= 180) { timeline[nextIdx][1](); nextIdx++; }
+    return;
+  }
+  
+  progress.style.width = (now/TOTAL*100) + '%';
+  timer.textContent = fmt(now) + ' / 3:00';
+
+  while(nextIdx < timeline.length && now >= timeline[nextIdx][0]){
+    timeline[nextIdx][1]();
+    nextIdx++;
+  }
+  frameId = requestAnimationFrame(tick);
+}
+
+function startDemo(){
+  document.getElementById('start-screen').style.opacity = 0;
+  setTimeout(() => {
+    document.getElementById('start-screen').style.display = 'none';
+    startTime = Date.now();
+    tick();
+  }, 1000);
+}
+</script>
+</body>
+</html>

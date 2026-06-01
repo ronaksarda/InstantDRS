@@ -161,6 +161,17 @@ def logout():
     session.pop('authority_auth', None)
     return redirect('/login')
 
+@app.route('/demo')
+def demo():
+    return render_template('demo_conductor.html')
+
+@app.route('/demo-login')
+def demo_login():
+    """Auto-login for demo recording — sets session and redirects to authority."""
+    session['authority_auth'] = True
+    session['username'] = 'admin'
+    return redirect('/authority')
+
 @app.route('/submitted.html')
 def submitted():
     return render_template('submitted.html')
@@ -274,6 +285,7 @@ def triage():
 
     queue_data = {
         "incidents": sorted_list,
+        "resolved": current_state.get("resolved", []),
         "last_update": int(time.time()),
         "stats": {
             "total_received": total_received,
