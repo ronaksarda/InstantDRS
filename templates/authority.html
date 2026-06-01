@@ -655,6 +655,26 @@
         window.switchTab = switchTab;
         window.acknowledgeIncident = acknowledgeIncident;
         window.resolveIncident = resolveIncident;
+        window.deleteIncident = deleteIncident;
+
+        // --- HIGH SECURITY LOCKDOWN ---
+        // Instantly log out if the dispatcher switches tabs or minimizes the window
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log("Security breach detected: Tab lost focus. Terminating session.");
+                window.location.href = '/logout';
+            }
+        });
+
+        // Block Right-Click and DevTools shortcuts (Ctrl+Shift+I / F12)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j' || e.key.toLowerCase() === 'c'))) {
+                e.preventDefault();
+                alert("SECURITY ALERT: Developer tools prohibited in dispatch environment.");
+                window.location.href = '/logout';
+            }
+        });
     </script>
 </body>
 
