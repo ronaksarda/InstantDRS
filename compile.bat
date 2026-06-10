@@ -1,8 +1,8 @@
 @echo off
-echo Compiling priority_engine...
-g++ -std=c++17 -O2 -o priority_engine.exe priority_engine.cpp
+echo Compiling incident_sorter...
+g++ -std=c++17 -O2 -o incident_sorter.exe incident_sorter.cpp
 if %errorlevel% neq 0 (
-    echo Compilation failed.
+    echo Compilation failed!
     exit /b %errorlevel%
 )
-echo Success! priority_engine.exe is ready.
+echo Success! incident_sorter.exe is ready.

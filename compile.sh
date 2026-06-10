@@ -1,8 +1,8 @@
 #!/bin/bash
-echo "Compiling priority_engine..."
-g++ -std=c++17 -O2 -o priority_engine priority_engine.cpp
+echo "Compiling incident_sorter..."
+g++ -std=c++17 -O2 -o incident_sorter incident_sorter.cpp
 if [ $? -ne 0 ]; then
-    echo "Compilation failed."
+    echo "Compilation failed!"
     exit 1
 fi
-echo "Success! priority_engine is ready."
+echo "Success! incident_sorter is ready."

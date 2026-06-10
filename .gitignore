@@ -9,8 +9,11 @@ __pycache__/
 
 # Binaries & Data
 *.exe
-priority_engine
+incident_sorter
 live_queue.json
+users.json
+protected_uploads/*
+!protected_uploads/.gitkeep
 static/uploads/*
 !static/uploads/.gitkeep
 

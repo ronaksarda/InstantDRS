@@ -29,9 +29,16 @@
     position: relative; 
     width: 1280px; 
     height: 720px; 
-    background: #000;
+    background: linear-gradient(-45deg, #02040a, #1a1a2e, #0f172a, #31081f);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     overflow: hidden;
     box-shadow: 0 0 100px rgba(0,0,0,1);
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
   #site-frame { 
@@ -71,11 +78,12 @@
     pointer-events: auto; 
   }
 
-  /* Start Screen */
   #start-screen {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center, #1a1a2e 0%, #02040a 100%);
+    background: linear-gradient(-45deg, #02040a, #1a1a2e, #0f172a, #31081f);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
     z-index: 999;
     display: flex;
     flex-direction: column;

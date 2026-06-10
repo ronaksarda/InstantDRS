@@ -7,6 +7,7 @@ import re
 from functools import wraps
 from collections import defaultdict
 from flask import Flask, request, jsonify, render_template, Response, session, redirect
+from werkzeug.security import generate_password_hash, check_password_hash
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -16,13 +17,13 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "instantdrs-secret-2026")
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=False,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
 )
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-CPP_BINARY = "priority_engine.exe" if os.name == 'nt' else "./priority_engine"
+CPP_BINARY = "incident_sorter.exe" if os.name == 'nt' else "./incident_sorter"
 QUEUE_FILE = os.path.join(os.path.dirname(__file__), "live_queue.json")
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "protected_uploads")
 AUTHORITY_PIN = os.getenv("AUTHORITY_PIN", "1234")
@@ -79,15 +80,6 @@ def sanitize(text, max_len=500):
     text = re.sub(r'<[^>]+>', '', str(text))
     return text[:max_len].strip()
 
-def auth_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not session.get('authority_auth'):
-            if request.path.startswith('/api/') or request.path.startswith('/protected_uploads/'):
-                return jsonify({"error": "Unauthorized"}), 401
-            return redirect('/login')
-        return f(*args, **kwargs)
-    return decorated
 
 # Simple In-Memory Rate Limiter
 request_counts = defaultdict(list)
@@ -168,7 +160,8 @@ def fallback_analysis(text, emergency_type, img_b64):
         "verified": bool(img_b64),
         "summary": text[:60] if text else "No description",
         "recommended_units": "Standard Response",
-        "secondary_risks": "Unknown"
+        "secondary_risks": "None",
+        "ai_reasoning": "AI Offline - Manual triage required"
     }
 
 @app.route('/')
@@ -176,28 +169,72 @@ def index():
     return render_template('index.html')
 
 @app.route('/authority')
-@auth_required
 def authority():
+    if not session.get('authority_auth'):
+        return redirect('/login')
     return render_template('authority.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip().lower()
-        password = request.form.get('password', '').strip()
-        # Hardcoded for hackathon, in production use Firebase Auth or secure DB
-        admin_pass = os.getenv("ADMIN_PASSWORD", "InstantDRS2026")
-        if username == 'admin' and password == admin_pass:
+        username = request.form.get('username')
+        password = request.form.get('password')
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        
+        custom_users = {}
+        if os.path.exists('users.json'):
+            try:
+                with open('users.json', 'r') as f:
+                    custom_users = json.load(f)
+            except:
+                pass
+
+        if admin_password and username == 'admin' and password == admin_password:
             session['authority_auth'] = True
             session['username'] = username
             return redirect('/authority')
-        return render_template('login.html', error=True)
-    return render_template('login.html', error=False)
+        elif username in custom_users and check_password_hash(custom_users[username], password):
+            session['authority_auth'] = True
+            session['username'] = username
+            return redirect('/authority')
+        else:
+            return render_template('login.html', error="Invalid credentials")
+    return render_template('login.html')
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.pop('authority_auth', None)
+    session.pop('username', None)
     return redirect('/login')
+
+@app.route('/api/users/add', methods=['POST'])
+def add_user():
+    if not session.get('authority_auth'):
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({"error": "Missing username or password"}), 400
+        
+    custom_users = {}
+    if os.path.exists('users.json'):
+        try:
+            with open('users.json', 'r') as f:
+                custom_users = json.load(f)
+        except:
+            pass
+            
+    if username in custom_users or username == 'admin':
+        return jsonify({"error": "User already exists"}), 400
+        
+    custom_users[username] = generate_password_hash(password)
+    with open('users.json', 'w') as f:
+        json.dump(custom_users, f)
+        
+    return jsonify({"success": True})
 
 @app.route('/demo')
 def demo():
@@ -315,8 +352,20 @@ def triage():
         cpp_used = True
         print(f"C++ ENGINE: sorted {len(sorted_ids)} incidents in {cpp_time_ms}ms")
     except Exception as e:
-        print(f"BRIDGE ERROR: {e}")
-        sorted_list = [report] + current_state.get("incidents", [])
+        print(f"BRIDGE ERROR: {e} - Falling back to Python sort")
+        cpp_used = False
+        all_incidents = current_state.get("incidents", []) + [report]
+        
+        def calc_score(inc):
+            try:
+                sev = float(inc.get('severity', 0))
+                ts = float(inc.get('time', 0))
+                secs = max(0.0, time.time() - ts)
+                return (sev * 2.0) + (secs / 60.0)
+            except:
+                return 0.0
+                
+        sorted_list = sorted(all_incidents, key=calc_score, reverse=True)
 
     total_received = current_state.get("stats", {}).get("total_received", 0) + 1
     all_sevs = [inc.get('severity', 0) for inc in sorted_list]
@@ -325,7 +374,7 @@ def triage():
     queue_data = {
         "incidents": sorted_list,
         "resolved": current_state.get("resolved", []),
-        "last_update": int(time.time()),
+        "last_update": time.time(),
         "stats": {
             "total_received": total_received,
             "avg_severity": avg_sev,
@@ -353,19 +402,26 @@ def triage():
     }), 200
 
 @app.route('/protected_uploads/<path:filename>')
-@auth_required
 def serve_protected_upload(filename):
     from flask import send_from_directory
     return send_from_directory(UPLOAD_DIR, filename)
 
 @app.route('/api/feed')
-@auth_required
 def api_feed():
+    if not session.get('authority_auth'):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify(load_queue())
+
+@app.route('/api/backup')
+def backup_data():
+    if not session.get('authority_auth'):
+        return jsonify({"error": "Unauthorized"}), 401
     return jsonify(load_queue())
 
 @app.route('/api/resolve', methods=['POST'])
-@auth_required
 def resolve_incident():
+    if not session.get('authority_auth'):
+        return jsonify({"error": "Unauthorized"}), 401
     data = request.json
     incident_id = data.get('id')
     if not incident_id:
@@ -385,7 +441,7 @@ def resolve_incident():
         resolved.append(incident)
         # Keep only last 50 resolved cases
         queue['resolved'] = resolved[-50:]
-        queue['last_update'] = int(time.time())
+        queue['last_update'] = time.time()
         # Update active count in stats
         if 'stats' in queue:
             queue['stats']['active_count'] = len(queue['incidents'])
@@ -395,8 +451,9 @@ def resolve_incident():
     return jsonify({"error": "Incident not found"}), 404
 
 @app.route('/api/delete', methods=['POST'])
-@auth_required
 def delete_incident():
+    if not session.get('authority_auth'):
+        return jsonify({"error": "Unauthorized"}), 401
     data = request.json
     incident_id = data.get('id')
     if not incident_id:
@@ -426,7 +483,7 @@ def delete_incident():
         # Remove from queues
         queue['incidents'] = [inc for inc in incidents if inc['id'] != incident_id]
         queue['resolved'] = [inc for inc in resolved if inc['id'] != incident_id]
-        queue['last_update'] = int(time.time())
+        queue['last_update'] = time.time()
         if 'stats' in queue:
             queue['stats']['active_count'] = len(queue['incidents'])
         save_queue(queue)
@@ -435,7 +492,6 @@ def delete_incident():
     return jsonify({"error": "Incident not found"}), 404
 
 @app.route('/api/stream')
-@auth_required
 def stream():
     def event_stream():
         last_update = 0

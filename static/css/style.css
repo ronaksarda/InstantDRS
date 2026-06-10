@@ -27,6 +27,11 @@ body {
     font-family: 'Outfit', sans-serif;
     margin: 0;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+input, textarea, .glass {
+    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
 }
 
 .glass {
@@ -73,6 +78,16 @@ body {
 @keyframes sos-ring {
     0%   { transform: scale(0.9); opacity: 1; }
     100% { transform: scale(1.6); opacity: 0; }
+}
+
+.glow-pulse-red {
+    animation: glow-pulse-red 1.5s infinite;
+}
+
+@keyframes glow-pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
 }
 
 .triage-bar {
@@ -164,3 +179,5 @@ body.low-power .sos-button {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
 }
+
+

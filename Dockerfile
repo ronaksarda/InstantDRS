@@ -1,7 +1,7 @@
 # Stage 1: Build C++ Binary
 FROM gcc:latest AS cpp-builder
-COPY priority_engine.cpp .
-RUN g++ -std=c++17 -O2 -o priority_engine priority_engine.cpp
+COPY incident_sorter.cpp .
+RUN g++ -std=c++17 -O2 -o incident_sorter incident_sorter.cpp
 
 # Stage 2: Python App
 FROM python:3.11-slim
@@ -20,8 +20,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy compiled C++ binary from builder
-COPY --from=cpp-builder /priority_engine .
-RUN chmod +x priority_engine
+COPY --from=cpp-builder /incident_sorter .
+RUN chmod +x incident_sorter
 
 # Set environment variables
 ENV PORT=8080

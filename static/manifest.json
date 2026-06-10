@@ -1,0 +1,21 @@
+{
+  "name": "InstantDRS Reporter",
+  "short_name": "InstantDRS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#DB2777",
+  "description": "Emergency triage and reporting platform.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Ccircle cx='96' cy='96' r='96' fill='%23DB2777'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-weight='900' font-size='64' text-anchor='middle' dominant-baseline='middle' fill='white'%3ESOS%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23DB2777'/%3E%3Ctext x='50%25' y='50%25' font-family='sans-serif' font-weight='900' font-size='150' text-anchor='middle' dominant-baseline='middle' fill='white'%3ESOS%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -3,132 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstantDRS | SOS Transmitted</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>InstantDRS | Report Received</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0a0a0a; --surface: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08); --text: #f5f5f5;
+            --text-muted: #737373; --text-dim: #404040;
+            --green: #22c55e; --red: #ef4444; --blue: #3b82f6;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; align-items: flex-start;
+            justify-content: center; padding: 40px 20px 80px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Dotted background */
+        .dotted-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 40%, transparent 100%);
+            pointer-events: none;
+        }
+        .glow-blob { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+
+        .container { position: relative; z-index: 1; width: 100%; max-width: 440px; }
+
+        /* Status badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 5px 14px; border-radius: 99px; font-size: 11px; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 28px;
+        }
+        .badge.green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); color: #4ade80; }
+        .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 2s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Check icon */
+        .check-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(34,197,94,0.12); border: 1.5px solid rgba(34,197,94,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; margin: 0 auto 18px;
+            box-shadow: 0 0 0 8px rgba(34,197,94,0.05), 0 0 40px rgba(34,197,94,0.15);
+        }
+
+        h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 6px; }
+        .subtitle { font-size: 14px; color: var(--text-muted); font-weight: 400; line-height: 1.5; margin-bottom: 24px; }
+
+        /* Receipt box */
+        .receipt {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px 18px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .receipt-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+        #incident-id { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.03em; }
+        .copy-btn {
+            padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+            letter-spacing: 0.05em; border: 1px solid var(--border);
+            background: transparent; color: var(--text-muted); cursor: pointer;
+            font-family: inherit; transition: all 0.15s;
+        }
+        .copy-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: var(--surface); }
+
+        /* Timeline */
+        .timeline { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
+        .step {
+            display: flex; gap: 14px; align-items: flex-start;
+            padding: 13px 0; position: relative;
+        }
+        .step:not(:last-child)::after {
+            content: ''; position: absolute; left: 15px; top: 42px; bottom: 0;
+            width: 1px; background: var(--border);
+        }
+        .step-node {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0; border: 1px solid;
+            position: relative; z-index: 1;
+        }
+        .step-node.done { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.35); color: #4ade80; }
+        .step-node.active { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.35); color: #60a5fa; animation: active-pulse 2s ease-in-out infinite; }
+        .step-node.pending { background: var(--surface); border-color: var(--border); color: var(--text-dim); }
+        @keyframes active-pulse { 0%,100%{border-color:rgba(59,130,246,0.35)} 50%{border-color:rgba(59,130,246,0.65)} }
+        .step-name { font-size: 13px; font-weight: 600; }
+        .step-name.done { color: #4ade80; }
+        .step-name.active { color: #60a5fa; }
+        .step-name.pending { color: var(--text-dim); }
+        .step-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* AI card */
+        .ai-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px;
+            margin-bottom: 20px; position: relative; overflow: hidden;
+        }
+        .ai-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+        }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .ai-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+        .ai-verified { font-size: 11px; font-weight: 600; color: #4ade80; display: flex; align-items: center; gap: 5px; }
+        .ai-verified::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; display: inline-block; }
+        #ai-summary { font-size: 15px; font-weight: 600; line-height: 1.55; color: #e5e5e5; margin-bottom: 14px; }
+        .ai-row {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 10px; margin-bottom: 8px;
+        }
+        .ai-row .row-icon { font-size: 18px; flex-shrink: 0; }
+        .ai-row-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+        .ai-row-value { font-size: 12px; font-weight: 600; }
+        #ai-units { color: #60a5fa; }
+        #ai-risks { color: #fb923c; }
+        .ai-footer { padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-weight: 600; margin-top: 4px; }
+
+        /* Actions */
+        .btn-primary {
+            display: block; width: 100%; padding: 14px;
+            background: white; color: #0a0a0a;
+            font-size: 14px; font-weight: 700; text-align: center;
+            text-decoration: none; border-radius: 12px; border: none;
+            cursor: pointer; font-family: inherit; transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .btn-primary:hover { background: #f5f5f5; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transform: translateY(-1px); }
+        .btn-secondary {
+            display: block; width: 100%; padding: 13px;
+            background: transparent; color: var(--text-muted);
+            font-size: 13px; font-weight: 600; text-align: center;
+            text-decoration: none; border-radius: 12px;
+            border: 1px solid var(--border); cursor: pointer;
+            font-family: inherit; transition: all 0.15s; margin-top: 10px;
+        }
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: var(--surface); }
+        .emergency-note { text-align: center; font-size: 12px; color: var(--text-dim); margin-top: 20px; }
+        .emergency-note strong { color: var(--text-muted); }
+
         @media print {
-            body { background: white !important; color: black !important; }
-            .glass { background: white !important; border: 2px solid black !important; box-shadow: none !important; backdrop-filter: none !important; }
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            a, button { display: none !important; }
-            #ai-results { background: #f8fafc !important; color: black !important; border: 1px solid #e2e8f0 !important; }
-            #ai-results * { color: black !important; }
-            .scan-line-v, .animate-ping { display: none !important; }
+            .dotted-bg, .glow-blob, .btn-secondary { display: none !important; }
+            body { background: white; color: black; }
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6 transition-colors duration-500">
-    <script>
-        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
-    </script>
-    <div class="relative w-full max-w-md">
-        <!-- Background Glow -->
-        <div class="absolute -inset-10 bg-pink-500/10 blur-[100px] -z-10"></div>
-        
-        <div class="glass rounded-[3rem] p-8 md:p-12 text-center space-y-8 relative overflow-hidden">
-            <div class="scan-line-v"></div>
-            
-            <div class="relative">
-                <div class="w-24 h-24 mx-auto bg-green-500/20 rounded-full flex items-center justify-center text-5xl relative">
-                    <span class="animate-pulse">✅</span>
-                    <div class="absolute inset-0 border-4 border-green-500 rounded-full animate-ping opacity-20"></div>
+<body>
+    <div class="dotted-bg"></div>
+    <div class="glow-blob" style="width:400px;height:400px;top:-80px;right:-60px;background:radial-gradient(circle,rgba(34,197,94,0.12),transparent)"></div>
+    <div class="glow-blob" style="width:300px;height:300px;bottom:-60px;left:-40px;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent)"></div>
+
+    <div class="container">
+        <div style="text-align:center">
+            <div class="badge green"><span class="dot"></span>Report Received</div>
+            <div class="check-icon">✓</div>
+            <h1>SOS Dispatched</h1>
+            <p class="subtitle">Your report is live. Authorities have been notified and response is being coordinated.</p>
+        </div>
+
+        <div class="receipt">
+            <div>
+                <div class="receipt-label">Reference ID</div>
+                <div id="incident-id">Loading...</div>
+            </div>
+            <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+
+        <!-- Mission Timeline -->
+        <div class="timeline">
+            <div class="step">
+                <div class="step-node done">✓</div>
+                <div>
+                    <div class="step-name done">Report Received</div>
+                    <div class="step-desc">Your emergency has been securely logged</div>
                 </div>
             </div>
-
-            <div class="space-y-3">
-                <h1 class="text-4xl font-black uppercase tracking-tighter text-slate-800">SOS Dispatched</h1>
-                <div class="inline-block px-6 py-2 bg-pink-600/10 border-2 border-pink-600 rounded-2xl">
-                    <p class="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-1">Receipt ID</p>
-                    <p id="incident-id" class="text-2xl font-black text-slate-900 tracking-wider">...</p>
-                </div>
-                <p class="text-slate-500 text-sm font-medium">Your report has been transmitted via Satellite Link</p>
-            </div>
-
-            <div id="ai-results" class="hidden text-left space-y-4 p-6 bg-slate-900 rounded-[2rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-3">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                </div>
-                
-                <div class="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em]">AI Triage Protocol v1.5</div>
-                
-                <div id="ai-summary" class="text-lg font-bold text-white leading-tight"></div>
-                
-                <div class="grid grid-cols-1 gap-3 pt-2">
-                    <div id="ai-units-container" class="hidden flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
-                        <span class="text-xl">🚒</span>
-                        <div>
-                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Recommended Units</div>
-                            <div id="ai-units" class="text-xs text-cyan-400 font-bold"></div>
-                        </div>
-                    </div>
-                    
-                    <div id="ai-risks-container" class="hidden flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
-                        <span class="text-xl">⚠️</span>
-                        <div>
-                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Secondary Hazards</div>
-                            <div id="ai-risks" class="text-xs text-orange-400 font-bold"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-2 border-t border-white/5 flex justify-between items-center">
-                    <div id="ai-engine" class="text-[8px] text-slate-500 font-black uppercase tracking-widest"></div>
-                    <div class="text-[8px] text-green-500 font-black uppercase tracking-widest">Verified ✓</div>
+            <div class="step">
+                <div class="step-node done">✓</div>
+                <div>
+                    <div class="step-name done">AI Triage Complete</div>
+                    <div class="step-desc">Severity assessed, response units recommended</div>
                 </div>
             </div>
-
-            <div class="space-y-4">
-                <div class="triage-bar h-1.5">
-                    <div class="triage-progress rounded-full"></div>
+            <div class="step">
+                <div class="step-node active" style="font-size:16px">⟳</div>
+                <div>
+                    <div class="step-name active">Dispatching Units</div>
+                    <div class="step-desc">Coordinating nearest available response teams</div>
                 </div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">Real-time Coordination Active</p>
             </div>
-
-            <div class="flex flex-col gap-3 pt-4">
-                <a href="/" class="w-full py-4 bg-pink-600 hover:bg-pink-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-pink-600/20 active:scale-95">
-                    Submit New Report
-                </a>
-                <button onclick="window.print()" class="w-full py-3 glass hover:bg-white/20 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 transition-all">
-                    📄 Download Receipt
-                </button>
+            <div class="step">
+                <div class="step-node pending">○</div>
+                <div>
+                    <div class="step-name pending">Units En Route</div>
+                    <div class="step-desc">Estimated arrival time pending confirmation</div>
+                </div>
             </div>
         </div>
+
+        <!-- AI Analysis -->
+        <div class="ai-card" id="ai-results" style="display:none">
+            <div class="ai-header">
+                <span class="ai-tag">AI Triage Analysis</span>
+                <span class="ai-verified">Verified</span>
+            </div>
+            <div id="ai-summary"></div>
+            <div class="ai-row" id="ai-units-container" style="display:none">
+                <span class="row-icon">🚒</span>
+                <div>
+                    <div class="ai-row-label">Recommended Units</div>
+                    <div id="ai-units" class="ai-row-value"></div>
+                </div>
+            </div>
+            <div class="ai-row" id="ai-risks-container" style="display:none">
+                <span class="row-icon">⚠️</span>
+                <div>
+                    <div class="ai-row-label">Secondary Hazards</div>
+                    <div id="ai-risks" class="ai-row-value"></div>
+                </div>
+            </div>
+            <div class="ai-footer">
+                <span id="ai-engine"></span>
+                <span style="color:#4ade80">Verified ✓</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <a href="/" class="btn-primary">Submit Another Report</a>
+        <button onclick="window.print()" class="btn-secondary">📄 Save Receipt</button>
+
+        <p class="emergency-note">
+            Life-threatening? Call <strong>112</strong> immediately.
+        </p>
     </div>
 
     <script>
         try {
             const result = JSON.parse(sessionStorage.getItem('triage_result'));
+            const idEl = document.getElementById('incident-id');
+
             if (result) {
-                document.getElementById('incident-id').textContent = result.id || 'SOS-000';
-                
+                idEl.textContent = result.id || 'SOS-UNKNOWN';
+
+                document.getElementById('copy-btn').addEventListener('click', () => {
+                    navigator.clipboard.writeText(idEl.textContent).then(() => {
+                        document.getElementById('copy-btn').textContent = 'Copied!';
+                        setTimeout(() => document.getElementById('copy-btn').textContent = 'Copy', 2000);
+                    });
+                });
+
                 if (result.ai_analysis) {
                     const box = document.getElementById('ai-results');
-                    box.classList.remove('hidden');
+                    box.style.display = 'block';
                     const ai = result.ai_analysis;
-                    
-                    document.getElementById('ai-summary').textContent = ai.summary || 'Emergency Processed';
-                    
+                    document.getElementById('ai-summary').textContent = ai.summary || 'Emergency processed and prioritized.';
                     if (ai.recommended_units) {
-                        document.getElementById('ai-units-container').classList.remove('hidden');
+                        document.getElementById('ai-units-container').style.display = 'flex';
                         document.getElementById('ai-units').textContent = ai.recommended_units;
                     }
-                    
-                    if (ai.secondary_risks && ai.secondary_risks !== 'None' && ai.secondary_risks !== 'None detected') {
-                        document.getElementById('ai-risks-container').classList.remove('hidden');
+                    if (ai.secondary_risks && !['None', 'None detected', 'none'].includes(ai.secondary_risks)) {
+                        document.getElementById('ai-risks-container').style.display = 'flex';
                         document.getElementById('ai-risks').textContent = ai.secondary_risks;
                     }
-                    
-                    document.getElementById('ai-engine').textContent = result.cpp_engine ? 
-                        `Priority Engine: ${result.cpp_time_ms}ms` : 'Manual Triage Fallback';
+                    document.getElementById('ai-engine').textContent = result.cpp_engine
+                        ? `Priority Engine: ${result.cpp_time_ms}ms` : 'Standard Triage';
                 }
-                // Don't clear immediately, allow for refresh/print
             } else {
-                console.warn("No triage result found in sessionStorage");
+                idEl.textContent = 'No data found';
             }
-        } catch(e) { console.error("Receipt error:", e); }
+        } catch(e) { console.error('Receipt render error:', e); }
     </script>
 </body>
 </html>
