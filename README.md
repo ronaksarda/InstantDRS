@@ -1,46 +1,91 @@
-# InstantDRS (Instant Disaster Response System) 🚨
+# InstantDRS
 
-InstantDRS is a web application built for the **2026 Google Solution Challenge**. It allows a person in an emergency to submit a quick SOS report with optional media (photos/video/audio), and it gives a dispatcher a dashboard to view and manage these incidents.
+> Real-time emergency triage and disaster response coordination.
 
-![Dashboard Screenshot](docs/screenshot.png)
+InstantDRS is an emergency response system built to help coordinate triage and disaster relief in real time. It combines Firebase's live data infrastructure with Google's Gemini API for AI-assisted triage decision support.
 
-## 🛠️ Technical Stack
-- **Frontend**: HTML/JS/CSS (TailwindCSS) with a simple web interface.
-- **Backend**: Python (Flask).
-- **AI Integration**: Google Gemini 1.5 Flash is used to summarize incoming emergency reports.
-- **Sorting**: A C++ merge sort (`incident_sorter.cpp`) that orders active incidents based on severity.
-- **Database**: Firebase Firestore is used to store data for the Command Center.
+---
 
-## 🚀 Getting Started
+## What It Does
 
-### Prerequisites
-- Python 3.10+
-- G++ Compiler (to compile the C++ sorting file)
-- Google Gemini API Key
+- **Real-time coordination** — Firebase Realtime Database keeps all responders in sync instantly
+- **AI triage assistance** — Gemini API helps prioritize cases and suggest response actions
+- **Authentication** — Firebase Auth for secure responder login
+- **Incident tracking** — log, update, and monitor active emergencies as they unfold
 
-### Installation & Setup
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Compile the incident sorter:
-   ```bash
-   # Windows
-   .\compile.bat
-   
-   # Linux/Mac
-   ./compile.sh
-   ```
-4. Configure your `.env` file (copy `.env.example` to `.env` if available). 
-   - Set your `GEMINI_API_KEY`.
-   - Set your `ADMIN_PASSWORD` (this is used to log into the dispatch dashboard).
-5. Run the server:
-   ```bash
-   python app.py
-   ```
+---
 
-## 🔐 Authority Dashboard
-You can access the dispatch dashboard at `/authority`.
-- Log in with the username `admin` and the password you set in your `.env` file under `ADMIN_PASSWORD`.
-- From the dashboard, you can create additional dispatcher accounts under the Settings tab.
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Auth** | Firebase Authentication |
+| **Database** | Firebase Realtime Database |
+| **AI / Triage** | Google Gemini API |
+| **Backend** | Python (Flask) |
+| **Frontend** | HTML, CSS, JavaScript |
+
+---
+
+## Setup
+
+```bash
+# Clone
+git clone https://github.com/ronaksarda/InstantDRS.git
+cd InstantDRS
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure Firebase
+# Add your Firebase config to config.py or .env:
+# FIREBASE_API_KEY=...
+# FIREBASE_AUTH_DOMAIN=...
+# FIREBASE_DATABASE_URL=...
+# FIREBASE_PROJECT_ID=...
+
+# Configure Gemini
+# GEMINI_API_KEY=...
+
+# Run
+python app.py
+```
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `FIREBASE_API_KEY` | Firebase project API key |
+| `FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `FIREBASE_DATABASE_URL` | Realtime Database URL |
+| `FIREBASE_PROJECT_ID` | Firebase project ID |
+| `GEMINI_API_KEY` | Google Gemini API key |
+
+---
+
+## Use Case
+
+Designed for scenarios where multiple responders need to coordinate quickly:
+- Natural disaster response
+- Mass casualty incidents
+- Field triage at large events
+
+The Gemini API integration provides AI-assisted decision support to help overwhelmed responders prioritize effectively.
+
+---
+
+## Status
+
+🟡 Active development
+
+---
+
+## License
+
+MIT
+
+---
+
+*Built by [Ronak Sarda](https://github.com/ronaksarda)*
