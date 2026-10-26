@@ -84,7 +84,7 @@ The Gemini API integration provides AI-assisted decision support to help overwhe
 
 ## License
 
-MIT
+All rights reserved. See `LICENSE`.
 
 ---
 
